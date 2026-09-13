@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JTO Attendance - Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      padding: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 15px;
+      align-items: end;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .control-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .control-group input,
+    .control-group select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-export {
+      background: #27ae60;
+    }
+    
+    .btn-export:hover {
+      background: #229954;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-top: 4px solid #667eea;
+    }
+    
+    .stat-card h3 {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
+    }
+    
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+    }
+    
+    .table-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    thead {
+      background: #f8f9fa;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    th {
+      padding: 15px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 13px;
+    }
+    
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    @media (max-width: 768px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+      
+      table {
+        font-size: 12px;
+      }
+      
+      th, td {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📊 JTO Attendance Admin Dashboard</h1>
+    <p>View and manage all attendance records</p>
+  </div>
+  
+  <div class="container">
+    <!-- Controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Filter by Date</label>
+        <input type="date" id="filterDate">
+      </div>
+      <div class="control-group">
+        <label>Filter by JTO ID</label>
+        <input type="text" id="filterJtoId" placeholder="Enter JTO ID">
+      </div>
+      <div class="control-group">
+        <label>Filter by Subject</label>
+        <select id="filterSubject">
+          <option value="">All Subjects</option>
+        </select>
+      </div>
+      <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats" id="statsContainer">
+      <div class="stat-card">
+        <h3>Total Records</h3>
+        <div class="value" id="totalRecords">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Unique JTOs</h3>
+        <div class="value" id="uniqueJtos">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Present</h3>
+        <div class="value" id="totalPresent">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Total Absent</h3>
+        <div class="value" id="totalAbsent">0</div>
+      </div>
+    </div>
+    
+    <!-- Table -->
+    <div class="table-container">
+      <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading attendance records...</p>
+      </div>
+      <div id="noData" class="no-data" style="display: none;">
+        <p>No attendance records found</p>
+      </div>
+      <table id="attendanceTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>JTO ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Trade</th>
+            <th>Unit</th>
+            <th>Subject</th>
+            <th>Sanctioned</th>
+            <th>Onroll</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Submitted At</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <script>
+    // Load and display all attendance records on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAttendanceRecords();
+      setDefaultDate();
+    });
+    
+    // Set today's date as default
+    function setDefaultDate() {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      document.getElementById('filterDate').value = dateStr;
+    }
+    
+    // Load attendance records
+    function loadAttendanceRecords() {
+      showLoading(true);
+      
+      google.script.run.withSuccessHandler(function(data) {
+        showLoading(false);
+        if (data && data.length > 0) {
+          displayRecords(data);
+          updateStats(data);
+          populateSubjectFilter(data);
+        } else {
+          document.getElementById('noData').style.display = 'block';
+        }
+      }).withFailureHandler(function(error) {
+        showLoading(false);
+        console.error('Error:', error);
+        document.getElementById('noData').style.display = 'block';
+      }).getAllAttendanceRecords();
+    }
+    
+    // Display records in table
+    function displayRecords(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      
+      const dateFilter = document.getElementById('filterDate').value;
+      const jtoIdFilter = document.getElementById('filterJtoId').value.toLowerCase();
+      const subjectFilter = document.getElementById('filterSubject').value;
+      
+      let filteredData = data.filter(record => {
+        const recordDate = new Date(record.date).toISOString().split('T')[0];
+        let matches = true;
+        
+        if (dateFilter && recordDate !== dateFilter) matches = false;
+        if (jtoIdFilter && !record.jtoId.toLowerCase().includes(jtoIdFilter)) matches = false;
+        if (subjectFilter && record.subject !== subjectFilter) matches = false;
+        
+        return matches;
+      });
+      
+      if (filteredData.length === 0) {
+        document.getElementById('noData').style.display = 'block';
+        document.getElementById('attendanceTable').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('noData').style.display = 'none';
+      document.getElementById('attendanceTable').style.display = 'table';
+      
+      filteredData.forEach(record => {
+        const row = tbody.insertRow();
+        const date = new Date(record.date).toLocaleDateString();
+        const submittedAt = new Date(record.submittedAt).toLocaleString();
+        
+        row.innerHTML = `
+          <td>${date}</td>
+          <td><strong>${record.jtoId}</strong></td>
+          <td>${record.name}</td>
+          <td>${record.email}</td>
+          <td>${record.trade}</td>
+          <td>${record.unit}</td>
+          <td>${record.subject}</td>
+          <td>${record.sanctioned}</td>
+          <td>${record.onroll}</td>
+          <td><strong>${record.presentCount}</strong></td>
+          <td><strong>${record.absent}</strong></td>
+          <td>${submittedAt}</td>
+        `;
+      });
+    }
+    
+    // Update statistics
+    function updateStats(data) {
+      let totalRecords = data.length;
+      let uniqueJtos = new Set(data.map(r => r.jtoId)).size;
+      let totalPresent = data.reduce((sum, r) => sum + r.presentCount, 0);
+      let totalAbsent = data.reduce((sum, r) => sum + r.absent, 0);
+      
+      document.getElementById('totalRecords').textContent = totalRecords;
+      document.getElementById('uniqueJtos').textContent = uniqueJtos;
+      document.getElementById('totalPresent').textContent = totalPresent;
+      document.getElementById('totalAbsent').textContent = totalAbsent;
+    }
+    
+    // Populate subject filter
+    function populateSubjectFilter(data) {
+      const subjects = [...new Set(data.map(r => r.subject))];
+      const select = document.getElementById('filterSubject');
+      const currentValue = select.value;
+      
+      subjects.sort().forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        select.appendChild(option);
+      });
+      
+      select.value = currentValue;
+    }
+    
+    // Add event listeners to filters
+    document.getElementById('filterDate').addEventListener('change', filterRecords);
+    document.getElementById('filterJtoId').addEventListener('keyup', filterRecords);
+    document.getElementById('filterSubject').addEventListener('change', filterRecords);
+    
+    function filterRecords() {
+      const tableBody = document.getElementById('tableBody');
+      if (tableBody.rows.length > 0) {
+        loadAttendanceRecords();
+      }
+    }
+    
+    // Export to CSV
+    function exportToCSV() {
+      const table = document.getElementById('attendanceTable');
+      const rows = table.querySelectorAll('tr');
+      let csv = [];
+      
+      rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        let csvRow = [];
+        cols.forEach(col => {
+          csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"');
+        });
+        csv.push(csvRow.join(','));
+      });
+      
+      const csvContent = csv.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'attendance_' + new Date().toISOString().split('T')[0] + '.csv';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+    
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
