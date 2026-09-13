@@ -88,6 +88,7 @@
       font-weight: 600;
       color: #333;
       margin-top: 3px;
+      word-break: break-word;
     }
     
     .form-group {
@@ -311,11 +312,6 @@
       100% { transform: rotate(360deg); }
     }
     
-    .disabled-option {
-      opacity: 0.6;
-      background: #ecf0f1;
-    }
-    
     @media (max-width: 480px) {
       .container {
         padding: 15px;
@@ -331,6 +327,10 @@
       }
       
       .readonly-display {
+        grid-template-columns: 1fr;
+      }
+      
+      .info-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -379,14 +379,6 @@
         <input type="date" id="attendanceDate" required>
       </div>
       
-      <!-- Trade Selection (if multiple subjects) -->
-      <div class="form-group" id="tradeGroup" style="display: none;">
-        <label>Trade <span class="required">*</span></label>
-        <select id="tradeSelect" required onchange="updateSanctionedOnroll()">
-          <option value="">-- Select Trade --</option>
-        </select>
-      </div>
-      
       <!-- Unit Selection -->
       <div class="form-group">
         <label>Unit <span class="required">*</span></label>
@@ -395,7 +387,7 @@
         </select>
       </div>
       
-      <!-- Subject Selection -->
+      <!-- Subject Selection (if multiple subjects) -->
       <div class="form-group" id="subjectGroup" style="display: none;">
         <label>Subject <span class="required">*</span></label>
         <select id="subjectSelect" required>
@@ -437,7 +429,7 @@
     <div class="submitted-list" id="submittedList" style="display: none;">
       <h4>✓ Submitted Today</h4>
       <div id="submittedItems"></div>
-      <button type="button" class="btn-another" style="width: 100%; margin-top: 10px;">+ Mark Another Subject</button>
+      <button type="button" class="btn-another" style="width: 100%; margin-top: 10px;" onclick="resetFormForAnother()">+ Mark Another Unit/Subject</button>
     </div>
     
     <!-- Loading Spinner -->
@@ -467,19 +459,20 @@
     // Initialize form based on JTO data
     function initializeForm() {
       // Check if JTO has single or multiple subjects
-      if (jtoData.subjects.length === 1) {
+      if (jtoData.subjects.length > 1) {
+        // Multiple subjects - show dropdown
+        document.getElementById('subjectGroup').style.display = 'block';
+        populateSubjectDropdown();
+      } else {
         // Single subject - auto-select
         document.getElementById('subjectGroup').style.display = 'none';
-        document.getElementById('tradeGroup').style.display = 'none';
-      } else if (jtoData.subjects.length > 1) {
-        // Multiple subjects - show dropdowns
-        document.getElementById('subjectGroup').style.display = 'block';
-        document.getElementById('tradeGroup').style.display = 'block';
-        populateSubjectDropdown();
       }
       
       // Populate units dropdown
       populateUnitsDropdown();
+      
+      // Load already submitted subjects
+      loadSubmittedSubjects();
     }
     
     // Populate Units Dropdown
@@ -506,9 +499,8 @@
       });
     }
     
-    // Update Sanctioned & Onroll based on Trade + Unit
+    // Update Sanctioned & Onroll based on Unit
     function updateSanctionedOnroll() {
-      const trade = document.getElementById('tradeSelect').value || jtoData.trade;
       const unit = document.getElementById('unitSelect').value;
       
       if (!unit) {
@@ -519,7 +511,7 @@
         return;
       }
       
-      // Call server to get sanctioned & onroll
+      // Call server to get sanctioned & onroll for this unit
       google.script.run.withSuccessHandler(function(result) {
         if (result) {
           document.getElementById('displaySanctioned').textContent = result.sanctioned;
@@ -527,7 +519,7 @@
           document.getElementById('maxPresent').textContent = result.onroll;
           currentOnroll = result.onroll;
         }
-      }).getSanctionedOnrollByTradeUnit(trade, unit);
+      }).getSanctionedOnrollByTradeUnit(jtoData.trade, unit);
     }
     
     // Form Submission
@@ -572,7 +564,7 @@
         jtoId: jtoData.jtoId,
         email: jtoData.email,
         name: jtoData.name,
-        trade: document.getElementById('tradeSelect').value || jtoData.trade,
+        trade: jtoData.trade,
         unit: unit,
         subject: subject,
         sanctioned: parseInt(document.getElementById('displaySanctioned').textContent),
@@ -585,8 +577,7 @@
         showLoading(false);
         if (result.success) {
           showSuccess(result.message);
-          document.getElementById('attendanceForm').reset();
-          setDefaultDate();
+          document.getElementById('attendanceForm').style.display = 'none';
           loadSubmittedSubjects();
         } else {
           showError(result.error);
@@ -609,7 +600,7 @@
           submitted.forEach(item => {
             const div = document.createElement('div');
             div.className = 'submitted-item';
-            div.innerHTML = `<span>${item.subject}</span> (Unit: ${item.unit}) - Present: ${item.presentCount}`;
+            div.innerHTML = `<span>${item.subject}</span> (${item.unit}) - Present: ${item.presentCount}`;
             itemsDiv.appendChild(div);
           });
           
@@ -618,6 +609,19 @@
           document.getElementById('submittedList').style.display = 'none';
         }
       }).getSubmittedSubjectsToday(jtoData.jtoId, date);
+    }
+    
+    // Reset form for another submission
+    function resetFormForAnother() {
+      document.getElementById('attendanceForm').style.display = 'block';
+      document.getElementById('attendanceForm').reset();
+      document.getElementById('unitSelect').value = '';
+      document.getElementById('subjectSelect').value = '';
+      document.getElementById('displaySanctioned').textContent = '0';
+      document.getElementById('displayOnroll').textContent = '0';
+      document.getElementById('maxPresent').textContent = '0';
+      currentOnroll = 0;
+      setDefaultDate();
     }
     
     // Alert Functions
