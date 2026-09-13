@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JTO Attendance System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 10px;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 25px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+    }
+    
+    .header h1 {
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .info-section {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .info-section h3 {
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .info-item {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .info-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .info-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-top: 3px;
+    }
+    
+    .form-group {
+      margin-bottom: 18px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .form-group label .required {
+      color: #e74c3c;
+    }
+    
+    .form-group select,
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+    
+    .form-group select:focus,
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .readonly-display {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    
+    .readonly-item {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+    }
+    
+    .readonly-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 5px;
+    }
+    
+    .readonly-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #333;
+    }
+    
+    .capacity-info {
+      background: #e8f4f8;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #3498db;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: #2c3e50;
+    }
+    
+    .capacity-info strong {
+      color: #2980b9;
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      grid-column: 1 / -1;
+    }
+    
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    
+    .btn-reset {
+      background: #ecf0f1;
+      color: #333;
+    }
+    
+    .btn-reset:hover {
+      background: #bdc3c7;
+    }
+    
+    .btn-another {
+      background: #27ae60;
+      color: white;
+    }
+    
+    .btn-another:hover {
+      background: #229954;
+    }
+    
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .alert.error {
+      background: #fadbd8;
+      color: #c0392b;
+      border-left: 4px solid #e74c3c;
+      display: block;
+    }
+    
+    .alert.success {
+      background: #d5f4e6;
+      color: #27ae60;
+      border-left: 4px solid #27ae60;
+      display: block;
+    }
+    
+    .alert.warning {
+      background: #fef5e7;
+      color: #d68910;
+      border-left: 4px solid #f39c12;
+      display: block;
+    }
+    
+    .submitted-list {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 2px solid #e0e0e0;
+    }
+    
+    .submitted-list h4 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    
+    .submitted-item {
+      background: white;
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      border-left: 4px solid #27ae60;
+      font-size: 13px;
+    }
+    
+    .submitted-item span {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .disabled-option {
+      opacity: 0.6;
+      background: #ecf0f1;
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+        margin-top: 10px;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+      
+      .button-group {
+        grid-template-columns: 1fr;
+      }
+      
+      .readonly-display {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📱 JTO Attendance</h1>
+      <p>Mark your daily attendance</p>
+    </div>
+    
+    <!-- Alert Messages -->
+    <div id="alertError" class="alert error"></div>
+    <div id="alertSuccess" class="alert success"></div>
+    <div id="alertWarning" class="alert warning"></div>
+    
+    <!-- JTO Information Section -->
+    <div class="info-section">
+      <h3>Your Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">JTO ID</div>
+          <div class="info-value" id="displayJtoId"><?= jtoData.jtoId ?></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Name</div>
+          <div class="info-value" id="displayName"><?= jtoData.name ?></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value" id="displayEmail"><?= jtoData.email ?></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Shift</div>
+          <div class="info-value" id="displayShift"><?= jtoData.shift ?></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Attendance Form -->
+    <form id="attendanceForm">
+      <!-- Date Selection -->
+      <div class="form-group">
+        <label>Date <span class="required">*</span></label>
+        <input type="date" id="attendanceDate" required>
+      </div>
+      
+      <!-- Trade Selection (if multiple subjects) -->
+      <div class="form-group" id="tradeGroup" style="display: none;">
+        <label>Trade <span class="required">*</span></label>
+        <select id="tradeSelect" required onchange="updateSanctionedOnroll()">
+          <option value="">-- Select Trade --</option>
+        </select>
+      </div>
+      
+      <!-- Unit Selection -->
+      <div class="form-group">
+        <label>Unit <span class="required">*</span></label>
+        <select id="unitSelect" required onchange="updateSanctionedOnroll()">
+          <option value="">-- Select Unit --</option>
+        </select>
+      </div>
+      
+      <!-- Subject Selection -->
+      <div class="form-group" id="subjectGroup" style="display: none;">
+        <label>Subject <span class="required">*</span></label>
+        <select id="subjectSelect" required>
+          <option value="">-- Select Subject --</option>
+        </select>
+      </div>
+      
+      <!-- Display Sanctioned & Onroll -->
+      <div class="readonly-display">
+        <div class="readonly-item">
+          <div class="readonly-label">Sanctioned</div>
+          <div class="readonly-value" id="displaySanctioned">0</div>
+        </div>
+        <div class="readonly-item">
+          <div class="readonly-label">Onroll</div>
+          <div class="readonly-value" id="displayOnroll">0</div>
+        </div>
+      </div>
+      
+      <!-- Capacity Info -->
+      <div class="capacity-info">
+        Maximum present count allowed: <strong><span id="maxPresent">0</span></strong>
+      </div>
+      
+      <!-- Present Count Input -->
+      <div class="form-group">
+        <label>Present Count <span class="required">*</span></label>
+        <input type="number" id="presentCount" min="0" required placeholder="Enter number of students present">
+      </div>
+      
+      <!-- Submit Buttons -->
+      <div class="button-group">
+        <button type="submit" class="btn-submit">✓ Submit Attendance</button>
+        <button type="reset" class="btn-reset">↻ Clear</button>
+      </div>
+    </form>
+    
+    <!-- Submitted Today Section -->
+    <div class="submitted-list" id="submittedList" style="display: none;">
+      <h4>✓ Submitted Today</h4>
+      <div id="submittedItems"></div>
+      <button type="button" class="btn-another" style="width: 100%; margin-top: 10px;">+ Mark Another Subject</button>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Processing...</p>
+    </div>
+  </div>
+  
+  <script>
+    const jtoData = <?= Utilities.jsonStringify(jtoData) ?>;
+    let currentOnroll = 0;
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeForm();
+      setDefaultDate();
+    });
+    
+    // Set today's date as default
+    function setDefaultDate() {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      document.getElementById('attendanceDate').value = dateStr;
+    }
+    
+    // Initialize form based on JTO data
+    function initializeForm() {
+      // Check if JTO has single or multiple subjects
+      if (jtoData.subjects.length === 1) {
+        // Single subject - auto-select
+        document.getElementById('subjectGroup').style.display = 'none';
+        document.getElementById('tradeGroup').style.display = 'none';
+      } else if (jtoData.subjects.length > 1) {
+        // Multiple subjects - show dropdowns
+        document.getElementById('subjectGroup').style.display = 'block';
+        document.getElementById('tradeGroup').style.display = 'block';
+        populateSubjectDropdown();
+      }
+      
+      // Populate units dropdown
+      populateUnitsDropdown();
+    }
+    
+    // Populate Units Dropdown
+    function populateUnitsDropdown() {
+      const select = document.getElementById('unitSelect');
+      select.innerHTML = '<option value="">-- Select Unit --</option>';
+      jtoData.units.forEach(unit => {
+        const option = document.createElement('option');
+        option.value = unit;
+        option.textContent = unit;
+        select.appendChild(option);
+      });
+    }
+    
+    // Populate Subjects Dropdown
+    function populateSubjectDropdown() {
+      const select = document.getElementById('subjectSelect');
+      select.innerHTML = '<option value="">-- Select Subject --</option>';
+      jtoData.subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        select.appendChild(option);
+      });
+    }
+    
+    // Update Sanctioned & Onroll based on Trade + Unit
+    function updateSanctionedOnroll() {
+      const trade = document.getElementById('tradeSelect').value || jtoData.trade;
+      const unit = document.getElementById('unitSelect').value;
+      
+      if (!unit) {
+        document.getElementById('displaySanctioned').textContent = '0';
+        document.getElementById('displayOnroll').textContent = '0';
+        document.getElementById('maxPresent').textContent = '0';
+        currentOnroll = 0;
+        return;
+      }
+      
+      // Call server to get sanctioned & onroll
+      google.script.run.withSuccessHandler(function(result) {
+        if (result) {
+          document.getElementById('displaySanctioned').textContent = result.sanctioned;
+          document.getElementById('displayOnroll').textContent = result.onroll;
+          document.getElementById('maxPresent').textContent = result.onroll;
+          currentOnroll = result.onroll;
+        }
+      }).getSanctionedOnrollByTradeUnit(trade, unit);
+    }
+    
+    // Form Submission
+    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const date = document.getElementById('attendanceDate').value;
+      const unit = document.getElementById('unitSelect').value;
+      const subject = document.getElementById('subjectSelect').value || jtoData.subjects[0];
+      const presentCount = parseInt(document.getElementById('presentCount').value);
+      
+      // Validation
+      if (!date) {
+        showError('Please select a date');
+        return;
+      }
+      
+      if (!unit) {
+        showError('Please select a unit');
+        return;
+      }
+      
+      if (jtoData.subjects.length > 1 && !subject) {
+        showError('Please select a subject');
+        return;
+      }
+      
+      if (isNaN(presentCount) || presentCount < 0) {
+        showError('Please enter a valid present count');
+        return;
+      }
+      
+      if (presentCount > currentOnroll) {
+        showError(`Present count (${presentCount}) cannot exceed Onroll (${currentOnroll})`);
+        return;
+      }
+      
+      // Submit attendance
+      showLoading(true);
+      
+      const formData = {
+        jtoId: jtoData.jtoId,
+        email: jtoData.email,
+        name: jtoData.name,
+        trade: document.getElementById('tradeSelect').value || jtoData.trade,
+        unit: unit,
+        subject: subject,
+        sanctioned: parseInt(document.getElementById('displaySanctioned').textContent),
+        onroll: currentOnroll,
+        presentCount: presentCount,
+        date: date
+      };
+      
+      google.script.run.withSuccessHandler(function(result) {
+        showLoading(false);
+        if (result.success) {
+          showSuccess(result.message);
+          document.getElementById('attendanceForm').reset();
+          setDefaultDate();
+          loadSubmittedSubjects();
+        } else {
+          showError(result.error);
+        }
+      }).withFailureHandler(function(error) {
+        showLoading(false);
+        showError('Error: ' + error);
+      }).submitAttendance(formData);
+    });
+    
+    // Load Submitted Subjects for Today
+    function loadSubmittedSubjects() {
+      const date = document.getElementById('attendanceDate').value;
+      google.script.run.withSuccessHandler(function(submitted) {
+        if (submitted && submitted.length > 0) {
+          const listDiv = document.getElementById('submittedList');
+          const itemsDiv = document.getElementById('submittedItems');
+          itemsDiv.innerHTML = '';
+          
+          submitted.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'submitted-item';
+            div.innerHTML = `<span>${item.subject}</span> (Unit: ${item.unit}) - Present: ${item.presentCount}`;
+            itemsDiv.appendChild(div);
+          });
+          
+          listDiv.style.display = 'block';
+        } else {
+          document.getElementById('submittedList').style.display = 'none';
+        }
+      }).getSubmittedSubjectsToday(jtoData.jtoId, date);
+    }
+    
+    // Alert Functions
+    function showError(message) {
+      const alert = document.getElementById('alertError');
+      alert.textContent = '❌ ' + message;
+      alert.style.display = 'block';
+      setTimeout(() => alert.style.display = 'none', 5000);
+    }
+    
+    function showSuccess(message) {
+      const alert = document.getElementById('alertSuccess');
+      alert.textContent = '✓ ' + message;
+      alert.style.display = 'block';
+      setTimeout(() => alert.style.display = 'none', 3000);
+    }
+    
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
